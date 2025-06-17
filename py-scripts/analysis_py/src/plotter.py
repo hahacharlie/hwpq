@@ -124,7 +124,7 @@ def setup_plot_style(
     plt.rcParams.update(params)
 
 
-def plot_frequency_vs_queue_size(ax, data_dict, title=None, arch_name=None):
+def plot_frequency_vs_queue_size(ax, data_dict, title=None, arch_name=None, color=None):
     """
     Plot the maximum achieved frequency vs queue size.
 
@@ -133,6 +133,7 @@ def plot_frequency_vs_queue_size(ax, data_dict, title=None, arch_name=None):
         data_dict (dict): Data from parsers.process_directory
         title (str, optional): Custom title for the plot
         arch_name (str, optional): Architecture name to determine plot style
+        color (str, optional): Override the color from the architecture style
     """
     queue_sizes, frequencies = dp.get_max_achieved_frequency(data_dict)
 
@@ -143,20 +144,22 @@ def plot_frequency_vs_queue_size(ax, data_dict, title=None, arch_name=None):
         else {"color": "blue", "marker": "o", "display_name": "Architecture"}
     )
 
+    # Override color if specified
+    plot_color = color if color is not None else style["color"]
+
     ax.plot(
         queue_sizes,
         frequencies,
         f"{style['marker']}-",
-        color=style["color"],
+        color=plot_color,
         linewidth=4,
         label=style["display_name"],
         markersize=14,
     )
 
-    ax.set_xlabel("Queue Size")
-    ax.set_ylabel("Maximum Achieved Frequency (MHz)")
-    ax.set_title(title or "Maximum Achieved Frequency vs Queue Size")
-    # ax.set_title(title)
+    ax.set_xlabel("Queue Size", fontsize=32)
+    ax.set_ylabel("Maximum Achieved Frequency (MHz)", fontsize=32)
+    ax.set_title(title or "Maximum Achieved Frequency vs Queue Size", fontsize=32)
     ax.set_xscale("log", base=2)
     ax.grid(True)
 
@@ -414,7 +417,7 @@ def plot_bram_utilization_vs_queue_size(ax, data_dict, title=None, arch_name=Non
     # ax.tick_params(axis='both', which='minor', labelsize=24)
 
 
-def plot_performance_comparison(ax, data_dict, arch_list, operation, title=None):
+def plot_performance_comparison(ax, data_dict, arch_list, operation, title=None, color=None):
     """
     Plot performance comparison across different architectures for a specific operation.
 
@@ -424,6 +427,7 @@ def plot_performance_comparison(ax, data_dict, arch_list, operation, title=None)
         arch_list (list): List of architecture names
         operation (str): Operation type ('enqueue', 'dequeue', 'replace')
         title (str, optional): Custom title for the plot
+        color (str, optional): Override color for all plots
     """
     for arch_name in arch_list:
         if arch_name in data_dict:
@@ -443,65 +447,18 @@ def plot_performance_comparison(ax, data_dict, arch_list, operation, title=None)
                 queue_sizes,
                 performance,
                 f"{style['marker']}-",
-                color=style["color"],
+                color=color if color else style["color"],
                 label=style["display_name"],
                 linewidth=4,
                 markersize=14,
             )
 
-            # if len(queue_sizes) > 0 and (arch_name.startswith("hybrid")):
-
-            #     ax.annotate(
-            #         f"{queue_sizes[0]}",
-            #         (queue_sizes[0], performance[0]),
-            #         textcoords="offset points",
-            #         xytext=(10, 10),
-            #         ha='center',
-            #         fontsize=18
-            #     )
-
-            #     ax.annotate(
-            #         f"{queue_sizes[1]}",
-            #         (queue_sizes[1], performance[1]),
-            #         textcoords="offset points",
-            #         xytext=(10, 10),
-            #         ha='center',
-            #         fontsize=18
-            #     )
-
-            #     ax.annotate(
-            #         f"{queue_sizes[2]}",
-            #         (queue_sizes[2], performance[2]),
-            #         textcoords="offset points",
-            #         xytext=(10, 10),
-            #         ha='center',
-            #         fontsize=18
-            #     )
-
-            #     ax.annotate(
-            #         f"{queue_sizes[3]}",
-            #         (queue_sizes[3], performance[3]),
-            #         textcoords="offset points",
-            #         xytext=(10, 10),
-            #         ha='center',
-            #         fontsize=18
-            #     )
-
-    # ax.set_xlabel("Queue Size", fontsize=32)
-    # ax.set_ylabel("Performance (MHz * ops/cycle)", fontsize=32)
-    # ax.set_title(title or f"{operation.capitalize()} Performance", fontsize=32)
-    ax.set_xlabel("Queue Size")
-    ax.set_ylabel("Performance (MOPS/s)")
-    ax.set_title(title or f"{operation.capitalize()} Performance")
-    # ax.set_title(title)
-    # ax.set_title(title, fontsize=32)
+    ax.set_xlabel("Queue Size", fontsize=32)
+    ax.set_ylabel("Performance (MOPS)", fontsize=32)
+    ax.set_title(title or f"{'Replace/Dequeue' if operation == 'replace' else operation.capitalize()} Performance", fontsize=32)
     ax.set_xscale("log", base=2)
     ax.grid(True)
     ax.legend()
-    # ax.legend(fontsize=14)
-    # Make axis scales larger
-    # ax.tick_params(axis='both', which='major', labelsize=24)
-    # ax.tick_params(axis='both', which='minor', labelsize=24)
 
 
 def plot_performance_comparison_nolegend(ax, data_dict, arch_list, operation, title=None):
@@ -597,7 +554,7 @@ def plot_resource_comparison(ax, data_dict, arch_list, title=None):
     ax.legend()
 
 
-def plot_efficiency_comparison(ax, data_dict, arch_list, operation, title=None):
+def plot_efficiency_comparison(ax, data_dict, arch_list, operation, title=None, color=None):
     """
     Plot resource utilization efficiency comparison across architectures.
     Lower values are better (less resources per performance unit).
@@ -608,6 +565,7 @@ def plot_efficiency_comparison(ax, data_dict, arch_list, operation, title=None):
         arch_list (list): List of architecture names
         operation (str): Operation type ('enqueue', 'dequeue', 'replace')
         title (str, optional): Custom title for the plot
+        color (str, optional): Color to use for all plots. If None, uses architecture-specific colors
     """
     for arch_name in arch_list:
         if arch_name in data_dict:
@@ -626,19 +584,19 @@ def plot_efficiency_comparison(ax, data_dict, arch_list, operation, title=None):
                 queue_sizes,
                 efficiency,
                 f"{style['marker']}-",
-                color=style["color"],
+                color=color if color else style["color"],
                 label=style["display_name"],
                 linewidth=4,
                 markersize=14,
             )
 
-    ax.set_xlabel("Queue Size")
-    ax.set_ylabel("Performance / Resource")
-    ax.set_title(title or f"{operation.capitalize()} Resource Efficiency")
+    ax.set_xlabel("Queue Size", fontsize=32)
+    ax.set_ylabel("Performance / Max Resource Type Utilization", fontsize=32)
+    ax.set_title(title or f"{'Replace/Dequeue' if operation == 'replace' else operation.capitalize()} Resource Efficiency", fontsize=32)
     ax.set_xscale("log", base=2)
     ax.set_yscale("log")
     ax.grid(True)
-    ax.legend(fontsize=12)
+    ax.legend()
 
 
 def create_summary_plots(data_dict, architecture, output_path=None, enqueue_option=None):
@@ -1104,10 +1062,10 @@ def process_and_plot_all(base_dir, output_dir=None):
         os.makedirs(individual_plots_dir, exist_ok=True)
         
         # Generate individual plots for frequency comparison
-        fig, ax = plt.subplots(figsize=(30, 10))
+        fig, ax = plt.subplots(figsize=(25, 12))
         for arch_name, data_dict in all_data.items():
             plot_frequency_vs_queue_size(ax, data_dict, arch_name=arch_name)
-        ax.legend(loc='upper left', bbox_to_anchor=(1.02, 1))
+        ax.legend(loc='best')
         plt.tight_layout(rect=[0, 0, 0.85, 1])  # Adjust the right margin to make room for the legend
         plot_path = os.path.join(individual_plots_dir, "frequency_comparison.png")
         plt.savefig(plot_path, dpi=300, bbox_inches="tight", format="png")
@@ -1115,10 +1073,10 @@ def process_and_plot_all(base_dir, output_dir=None):
         print(f"Saved individual plot to {plot_path}")
         
         # Generate individual plots for LUT utilization
-        fig, ax = plt.subplots(figsize=(30, 10))
+        fig, ax = plt.subplots(figsize=(25, 12))
         for arch_name, data_dict in all_data.items():
             plot_lut_utilization_vs_queue_size(ax, data_dict, arch_name=arch_name)
-        ax.legend(loc='upper left', bbox_to_anchor=(1.02, 1))
+        ax.legend(loc='best')
         plt.tight_layout(rect=[0, 0, 0.85, 1])
         plot_path = os.path.join(individual_plots_dir, "lut_utilization_comparison.png")
         plt.savefig(plot_path, dpi=300, bbox_inches="tight", format="png")
@@ -1126,10 +1084,10 @@ def process_and_plot_all(base_dir, output_dir=None):
         print(f"Saved individual plot to {plot_path}")
         
         # Generate individual plots for register utilization
-        fig, ax = plt.subplots(figsize=(30, 10))
+        fig, ax = plt.subplots(figsize=(25, 12))
         for arch_name, data_dict in all_data.items():
             plot_register_utilization_vs_queue_size(ax, data_dict, arch_name=arch_name)
-        ax.legend(loc='upper left', bbox_to_anchor=(1.02, 1))
+        ax.legend(loc='best')
         plt.tight_layout(rect=[0, 0, 0.85, 1])
         plot_path = os.path.join(individual_plots_dir, "register_utilization_comparison.png")
         plt.savefig(plot_path, dpi=300, bbox_inches="tight", format="png")
@@ -1137,11 +1095,11 @@ def process_and_plot_all(base_dir, output_dir=None):
         print(f"Saved individual plot to {plot_path}")
         
         # Generate individual plots for BRAM utilization (only for BRAM-based architectures)
-        fig, ax = plt.subplots(figsize=(30, 10))
+        fig, ax = plt.subplots(figsize=(25, 12))
         bram_archs = {k: v for k, v in all_data.items() if k in ['hybrid_tree', 'bram_tree', 'bram_tree_pipelined']}
         for arch_name, data_dict in bram_archs.items():
             plot_bram_utilization_vs_queue_size(ax, data_dict, arch_name=arch_name)
-        ax.legend(loc='upper left', bbox_to_anchor=(1.02, 1))
+        ax.legend(loc='best')
         plt.tight_layout(rect=[0, 0, 0.85, 1])
         plot_path = os.path.join(individual_plots_dir, "bram_utilization_comparison.png")
         plt.savefig(plot_path, dpi=300, bbox_inches="tight", format="png")
@@ -1149,10 +1107,10 @@ def process_and_plot_all(base_dir, output_dir=None):
         print(f"Saved individual plot to {plot_path}")
         
         # Generate individual plots for LUT usage
-        fig, ax = plt.subplots(figsize=(30, 10))
+        fig, ax = plt.subplots(figsize=(25, 12))
         for arch_name, data_dict in all_data.items():
             plot_lut_usage_vs_queue_size(ax, data_dict, arch_name=arch_name)
-        ax.legend(loc='upper left', bbox_to_anchor=(1.02, 1))
+        ax.legend(loc='best')
         plt.tight_layout(rect=[0, 0, 0.85, 1])
         plot_path = os.path.join(individual_plots_dir, "lut_usage_comparison.png")
         plt.savefig(plot_path, dpi=300, bbox_inches="tight", format="png")
@@ -1160,10 +1118,10 @@ def process_and_plot_all(base_dir, output_dir=None):
         print(f"Saved individual plot to {plot_path}")
         
         # Generate individual plots for register usage
-        fig, ax = plt.subplots(figsize=(30, 10))
+        fig, ax = plt.subplots(figsize=(25, 12))
         for arch_name, data_dict in all_data.items():
             plot_register_usage_vs_queue_size(ax, data_dict, arch_name=arch_name)
-        ax.legend(loc='upper left', bbox_to_anchor=(1.02, 1))
+        ax.legend(loc='best')
         plt.tight_layout(rect=[0, 0, 0.85, 1])
         plot_path = os.path.join(individual_plots_dir, "register_usage_comparison.png")
         plt.savefig(plot_path, dpi=300, bbox_inches="tight", format="png")
@@ -1171,7 +1129,7 @@ def process_and_plot_all(base_dir, output_dir=None):
         print(f"Saved individual plot to {plot_path}")
         
         # Generate individual plots for operations
-        operations = ["enqueue", "dequeue", "replace"]
+        operations = ["enqueue", "replace"]
         for operation in operations:
             # Filter architectures that support this operation
             if operation == "enqueue":
@@ -1180,29 +1138,43 @@ def process_and_plot_all(base_dir, output_dir=None):
                 valid_archs = all_data
                 
             if valid_archs:
-                fig, ax = plt.subplots(figsize=(30, 10))
-                plot_performance_comparison(ax, valid_archs, list(valid_archs.keys()), operation)
-                ax.legend(loc='upper left', bbox_to_anchor=(1.02, 1))
+                fig, ax = plt.subplots(figsize=(26, 13))
+                for arch_name in list(valid_archs.keys()):
+                    if arch_name == "bram_tree_pipelined" or arch_name == "bram_tree":
+                        plot_performance_comparison(ax, valid_archs, [arch_name], operation)
+                    else:
+                        plot_performance_comparison(ax, valid_archs, [arch_name], operation, color='lightgrey')
+                ax.legend(loc='best')
                 plt.tight_layout(rect=[0, 0, 0.85, 1])
-                plot_path = os.path.join(individual_plots_dir, f"{operation}_performance_comparison.png")
+                plot_title = f"{operation}_performance_comparison.png"
+                if operation == "replace":
+                    plot_title = "replace_dequeue_performance_comparison.png"
+                plot_path = os.path.join(individual_plots_dir, plot_title)
                 plt.savefig(plot_path, dpi=300, bbox_inches="tight", format="png")
                 plt.close(fig)
                 print(f"Saved individual plot to {plot_path}")
                 
                 # Also generate efficiency plots for each operation
-                fig, ax = plt.subplots(figsize=(30, 10))
-                plot_efficiency_comparison(ax, valid_archs, list(valid_archs.keys()), operation)
-                ax.legend(loc='upper left', bbox_to_anchor=(1.02, 1))
+                fig, ax = plt.subplots(figsize=(25, 12))
+                for arch_name in list(valid_archs.keys()):
+                    if arch_name == "hybrid_tree" or arch_name == "bram_tree_pipelined" or arch_name == "bram_tree":
+                        plot_efficiency_comparison(ax, valid_archs, [arch_name], operation)
+                    else:
+                        plot_efficiency_comparison(ax, valid_archs, [arch_name], operation, color='lightgrey')
+                ax.legend(loc='best')
                 plt.tight_layout(rect=[0, 0, 0.85, 1])
-                plot_path = os.path.join(individual_plots_dir, f"{operation}_efficiency_comparison.png")
+                plot_title = f"{operation}_efficiency_comparison.png"
+                if operation == "replace":
+                    plot_title = "replace_dequeue_efficiency_comparison.png"
+                plot_path = os.path.join(individual_plots_dir, plot_title)
                 plt.savefig(plot_path, dpi=300, bbox_inches="tight", format="png")
                 plt.close(fig)
                 print(f"Saved individual plot to {plot_path}")
         
         # Generate resource comparison plot
-        fig, ax = plt.subplots(figsize=(30, 10))
+        fig, ax = plt.subplots(figsize=(25, 12))
         plot_resource_comparison(ax, all_data, list(all_data.keys()))
-        ax.legend(loc='upper left', bbox_to_anchor=(1.02, 1))
+        ax.legend(loc='best')
         plt.tight_layout(rect=[0, 0, 0.85, 1])
         plot_path = os.path.join(individual_plots_dir, "resource_comparison.png")
         plt.savefig(plot_path, dpi=300, bbox_inches="tight", format="png")
@@ -1213,6 +1185,6 @@ def process_and_plot_all(base_dir, output_dir=None):
 
 if __name__ == "__main__":
     base_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))), "hwpq")
-    output_dir = os.path.join(base_dir, OUTPUT_DIR)
+    output_dir = os.path.join(base_dir, OUTPUT_DIR, "OSCAR")
     os.makedirs(output_dir, exist_ok=True)
     process_and_plot_all(base_dir, output_dir)
